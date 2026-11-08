@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled connection (app runtime)
+  directUrl = env("DIRECT_URL")   // direct connection (migrations)
+}
+
+enum InquiryStatus {
+  NEW
+  READ
+  REPLIED
+  ARCHIVED
+  SPAM
+}
+
+model Inquiry {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  interest  String
+  message   String
+  status    InquiryStatus @default(NEW)
+  emailSent Boolean       @default(false)
+  ipHash    String? // salted SHA-256, never the raw IP
+  userAgent String?
+  createdAt DateTime      @default(now())
+
+  @@index([ipHash, createdAt])
+  @@index([status, createdAt])
+}
